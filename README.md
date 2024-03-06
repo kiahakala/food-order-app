@@ -10,7 +10,8 @@ Based on a starting project by Max Schwarzmüller in his Udemy course "React - T
 
 The app state is managed with React Context API. It is simple to use in a small application like this one.
 
-### UI Components
+### Reusable UI Components
 
-- Reusable button component that dynamically accepts different styles
-- Custom modal component built with React createPortal API to render the modal outside the root div.
+- Button component that dynamically accepts different styles
+- Modal component built with React createPortal API to render the modal outside the root div
+- Input component that takes advantage of built-in browser features

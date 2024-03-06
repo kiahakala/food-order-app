@@ -19,8 +19,16 @@ export default function Cart() {
     userProgressCtx.hideCart();
   }
 
+  function checkoutOpenHandler() {
+    userProgressCtx.showCheckout();
+  }
+
   return (
-    <Modal className="cart" open={userProgressCtx.progress === "cart"}>
+    <Modal
+      className="cart"
+      open={userProgressCtx.progress === "cart"}
+      onClose={userProgressCtx.progress === "cart" ? cartCloseHandler : null}
+    >
       <h2>Ostoskori</h2>
       <ul>
         {cartCtx.items.map((item) => (
@@ -29,8 +37,8 @@ export default function Cart() {
             name={item.name}
             price={item.price}
             quantity={item.quantity}
-						onIncrease={() => cartCtx.addItem(item)}
-						onDecrease={() => cartCtx.removeItem(item.id)}
+            onIncrease={() => cartCtx.addItem(item)}
+            onDecrease={() => cartCtx.removeItem(item.id)}
           />
         ))}
       </ul>
@@ -39,7 +47,9 @@ export default function Cart() {
         <Button onClick={cartCloseHandler} textOnly>
           Sulje
         </Button>
-        <Button onClick={cartCloseHandler}>Kassalle</Button>
+        {cartCtx.items.length > 0 && (
+          <Button onClick={checkoutOpenHandler}>Kassalle</Button>
+        )}
       </p>
     </Modal>
   );
