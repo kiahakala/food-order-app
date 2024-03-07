@@ -26,7 +26,7 @@ app.post('/orders', async (req, res) => {
   if (orderData === null || orderData.items === null || orderData.items === []) {
     return res
       .status(400)
-      .json({ message: 'Missing data.' });
+      .json({ message: 'Tiedot puuttuvat.' });
   }
 
   if (
@@ -43,7 +43,7 @@ app.post('/orders', async (req, res) => {
   ) {
     return res.status(400).json({
       message:
-        'Missing data: Email, name, street, postal code or city is missing.',
+        'Puuttuvat tiedot: sähköpostiosoite, nimi, katuosoite, postinumero tai kaupunki puuttuu.',
     });
   }
 
@@ -55,7 +55,7 @@ app.post('/orders', async (req, res) => {
   const allOrders = JSON.parse(orders);
   allOrders.push(newOrder);
   await fs.writeFile('./data/orders.json', JSON.stringify(allOrders));
-  res.status(201).json({ message: 'Order created!' });
+  res.status(201).json({ message: 'Tilaus luotu!' });
 });
 
 app.use((req, res) => {
@@ -63,7 +63,7 @@ app.use((req, res) => {
     return res.sendStatus(200);
   }
 
-  res.status(404).json({ message: 'Not found' });
+  res.status(404).json({ message: 'Tietoja ei löydy.' });
 });
 
 app.listen(3000);
