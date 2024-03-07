@@ -5,10 +5,28 @@ import { currencyFormatter } from "../util/formatting";
 import Input from "./UI/Input";
 import Button from "./UI/Button";
 import UserProgressContext from "../store/UserProgressContext";
+import useHttp from "../hooks/useHttp";
+import Error from "./Error";
+
+// Request config needs to be set outside the function to prevent object recreation
+const requestConfig = {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+};
 
 export default function Checkout() {
   const cartCtx = useContext(CartContext);
   const userProgressCtx = useContext(UserProgressContext);
+
+  const {
+    data,
+    isLoading: isSending,
+    error,
+    sendRequest,
+    clearData,
+  } = useHttp("http://localhost:3000/orders", requestConfig);
 
   const cartTotal = cartCtx.items.reduce(
     (totalPrice, item) => totalPrice + item.price * item.quantity,
@@ -19,6 +37,12 @@ export default function Checkout() {
     userProgressCtx.hideCheckout();
   }
 
+  function finishCheckout() {
+    userProgressCtx.hideCheckout();
+    cartCtx.clearCart();
+    clearData();
+  }
+
   // Input name prop is required for FormData to work
   function submitHandler(event) {
     event.preventDefault();
@@ -26,18 +50,43 @@ export default function Checkout() {
     const fd = new FormData(event.target);
     const customerData = Object.fromEntries(fd.entries()); // { email: test@example.com }
 
-    fetch("http://localhost:3000/orders", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    sendRequest(
+      JSON.stringify({
         order: {
           items: cartCtx.items,
           customer: customerData,
         },
-      }),
-    });
+      })
+    );
+  }
+
+  let actions = (
+    <>
+      <Button type="button" textOnly onClick={checkoutCloseHandler}>
+        Sulje
+      </Button>
+      <Button>Tilaa</Button>
+    </>
+  );
+
+  if (isSending) {
+    actions = <span>Käsitellään...</span>;
+  }
+
+  // Success modal
+  if (data && !error) {
+    return (
+      <Modal
+        open={userProgressCtx.progress === "checkout"}
+        onClose={finishCheckout}
+      >
+        <h2>Valmis!</h2>
+        <p>Tilauksesi onnistui ja siirtyi käsittelyyn.</p>
+        <p className="modal-actions">
+          <Button onClick={finishCheckout}>Ok</Button>
+        </p>
+      </Modal>
+    );
   }
 
   return (
@@ -56,13 +105,8 @@ export default function Checkout() {
           <Input label="Postinumero" type="text" id="postal-code" />
           <Input label="Kaupunki" type="text" id="city" />
         </div>
-
-        <p className="modal-actions">
-          <Button type="button" textOnly onClick={checkoutCloseHandler}>
-            Sulje
-          </Button>
-          <Button>Tilaa</Button>
-        </p>
+        {error && <Error title="Tilaus epäonnistui" message={error} />}
+        <p className="modal-actions">{actions}</p>
       </form>
     </Modal>
   );

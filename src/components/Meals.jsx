@@ -1,26 +1,24 @@
-import { useEffect, useState } from "react";
 import MealItem from "./MealItem";
+import Error from "./Error";
+import useHttp from "../hooks/useHttp";
+
+// Request config needs to be set outside the function to prevent object recreation
+const requestConfig = {};
 
 export default function Meals() {
-  const [loadedMeals, setLoadedMeals] = useState([]);
+  const {
+    data: loadedMeals,
+    isLoading,
+    error,
+  } = useHttp("http://localhost:3000/meals", requestConfig, []);
 
-	useEffect(() => {
-		// a wrapped function can be async unlike a top-level function:
-		async function fetchMeals() {
-			const response = await fetch("http://localhost:3000/meals");
-	
-			if (!response.ok) {
-				// ...
-			}
-	
-			const meals = await response.json();
-			setLoadedMeals(meals);
-		}
+  if (isLoading) {
+    return <p className="center">Ladataan tuotteita...</p>;
+  }
 
-		fetchMeals();
-	}, []);
-
-	console.log(loadedMeals)
+	if (error) {
+		return <Error title="Virhe" message={error} />
+	}
 
   return (
     <ul id="meals">
